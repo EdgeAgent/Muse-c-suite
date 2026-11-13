@@ -1,0 +1,53 @@
+# Muse Autopilot — Setup Wizard question set (machine-readable)
+# Each answer maps to the knowledge-base file / rule it configures.
+wizard:
+  - screen: business
+    title: The Business
+    questions:
+      - id: business_name        { prompt: "Business name?", type: text, maps_to: "00_COMMAND_CENTER/company_goals.md" }
+      - id: one_liner            { prompt: "What do you sell, in one line?", type: text, maps_to: "00_COMMAND_CENTER/company_goals.md" }
+      - id: ideal_customer       { prompt: "Who is it for — your ideal customer?", type: text, maps_to: "02_OFFERS/ideal_customer_profiles.md" }
+      - id: market               { prompt: "Where do you sell — city/region, or online?", type: text, maps_to: "00_COMMAND_CENTER/company_goals.md" }
+  - screen: money
+    title: The Money
+    questions:
+      - id: revenue_goal         { prompt: "Monthly revenue goal?", type: number, maps_to: "00_COMMAND_CENTER/company_goals.md" }
+      - id: revenue_now          { prompt: "Roughly where is revenue now?", type: choice, options: [pre-revenue, under_5k, 5k_25k, over_25k], maps_to: "06_FINANCE/margin_targets.md" }
+      - id: test_budget_cap      { prompt: "Monthly spend the system may test with, inside batch approvals?", type: number, maps_to: "budget_rule.monthly_test_cap" }
+  - screen: offers
+    title: The Offers
+    questions:
+      - id: core_offers          { prompt: "Your core offers and price range? (one per line)", type: lines, maps_to: "02_OFFERS/offer_catalog.md" }
+      - id: never_promise        { prompt: "One thing you never promise or discount?", type: text, maps_to: "01_BRAND/prohibited_claims.md" }
+  - screen: brand
+    title: The Brand
+    questions:
+      - id: voice                { prompt: "Voice — pick the closest three", type: multi_choice, options: [direct, bold, friendly, premium, funny, no-nonsense], maps_to: "01_BRAND/brand_voice.md" }
+      - id: brand_color          { prompt: "Brand colour?", type: color, default: "#0066FF", maps_to: "01_BRAND/visual_identity.md" }
+  - screen: decision_limits
+    title: Decision Limits
+    required: true
+    questions:
+      - id: auto_allowed         { prompt: "What may run without you?", type: checklist, defaults: [internal_summaries, lead_scoring, drafts, reports], maps_to: "00_COMMAND_CENTER/decision_rights.md#mode_a" }
+      - id: always_stop          { prompt: "What must ALWAYS stop for you?", type: checklist, defaults: [spending, refunds, legal, deletions, new_promises], maps_to: "00_COMMAND_CENTER/decision_rights.md#mode_c" }
+      - id: approval_windows     { prompt: "Your two daily approval windows?", type: times, default: ["09:00", "16:00"], maps_to: "00_COMMAND_CENTER/decision_rights.md#batch_windows" }
+      - id: confidence_floor     { prompt: "Confidence floor — below this, escalate instead of acting", type: slider, min: 50, max: 95, default: 75, maps_to: "00_COMMAND_CENTER/decision_rights.md#thresholds" }
+  - screen: tools_priorities
+    title: Tools & Priorities
+    questions:
+      - id: connect_first        { prompt: "Which tools do we connect first?", type: checklist, options: [email, calendar, drive, whatsapp, slack, crm, meta_ads, instagram, shopify, stripe], maps_to: "connector_rollout.order" }
+      - id: priorities_30d       { prompt: "Top 3 priorities for the next 30 days?", type: lines, maps_to: "00_COMMAND_CENTER/current_priorities.md" }
+      - id: bottleneck           { prompt: "The #1 bottleneck right now?", type: choice, options: [leads, sales, delivery, cash, time], maps_to: "00_COMMAND_CENTER/current_priorities.md" }
+
+intake:
+  screen: 0
+  title: Bring Your Business With You
+  items:
+    - id: website_url          { prompt: "Business website URL", type: url, action: scan_and_prefill, maps_to: [business_name, one_liner, core_offers, brand_color, voice] }
+    - id: leads_csv            { prompt: "Upload your leads (CSV)", type: file, accepts: [csv], action: map_columns_dedupe_score, maps_to: "03_SALES/lead_book", contact_permission: none_until_batch_approval }
+    - id: customers_csv        { prompt: "Upload your customers/clients (CSV)", type: file, accepts: [csv], action: load_client_book, maps_to: "03_SALES/client_book" }
+    - id: offers_file          { prompt: "Upload products / services / price list", type: file, accepts: [csv, pdf], maps_to: "02_OFFERS/offer_catalog.md" }
+    - id: sales_export         { prompt: "Upload past invoices or a sales export (CSV)", type: file, accepts: [csv], maps_to: "06_FINANCE/revenue_seed" }
+    - id: documents            { prompt: "Upload documents (proposals, contracts, menus, SOPs)", type: file, accepts: [pdf, docx, txt, md], maps_to: "knowledge_base" }
+    - id: brand_assets         { prompt: "Upload logo & brand images", type: file, accepts: [png, jpg, svg], maps_to: "01_BRAND/logo_and_asset_rules.md" }
+    - id: reviews_file         { prompt: "Upload reviews / testimonials", type: file, accepts: [csv, txt, pdf], maps_to: "01_BRAND/approved_claims.md", quote_policy: verbatim_only }
